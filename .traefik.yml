@@ -1,0 +1,17 @@
+displayName: Traefik Aggregator
+type: provider
+
+iconPath: ./img/icon.svg
+bannerPath: ./img/icon.svg
+
+import: version.gafert.org/MadddinTribleD/traefikaggregator
+
+summary: 'Traefik Aggregator Plugin'
+
+testData:
+  pollInterval: 5s
+  instances:
+    - serviceName: other-traefik-host
+      urls: 
+        - http://other.traefik.host:80
+      apiEndpoint: http://other.traefik.host:8080/api
