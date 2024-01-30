@@ -1,29 +1,29 @@
-package aggregator
+package application
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/config"
 	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/models"
 )
 
-type Fetcher interface {
-	FetchRouters() ([]models.Router, error)
+type ApiQuerier struct {
+	apiEndpoint string
 }
 
-func NewFetcher(instanceConfig config.Instance) Fetcher {
-	return &fetcher{instanceConfig}
+func NewApiQuerier(apiEndpoint string) *ApiQuerier {
+	return &ApiQuerier{
+		apiEndpoint: apiEndpoint,
+	}
 }
 
-type fetcher struct {
-	config config.Instance
-}
-
-func (a *fetcher) FetchRouters() ([]models.Router, error) {
-	res, err := http.Get(fmt.Sprintf("%s/http/routers", a.config.ApiEndpoint))
+func (a *ApiQuerier) QueryHttpRouter(ctx context.Context) ([]models.Router, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/http/routers", a.apiEndpoint), nil)
+	client := &http.Client{}
+	res, err := client.Do(req)
 
 	if err != nil {
 		return nil, fmt.Errorf("error while fetching routers: %w", err)

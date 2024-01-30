@@ -4,82 +4,48 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
-	"github.com/traefik/genconf/dynamic"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/aggregator"
+	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/application"
 	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/config"
 	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/log"
 )
 
+// We need this defined here, because the plugin loader does not support importing from other packages
 type Config struct {
-	PollInterval string            `json:"pollInterval,omitempty"`
-	Instances    []config.Instance `json:"instances,omitempty"`
+	PollInterval string                   `json:"pollInterval,omitempty"`
+	Instances    []config.TraefikInstance `json:"instances,omitempty"`
 }
 
 type Provider struct {
-	config       *Config
-	aggregators  []aggregator.Aggregator
-	pollInterval time.Duration
-
-	cancel func()
+	app application.App
 }
 
-func CreateConfig() *Config {
-	return &Config{}
+func CreateConfig() *config.Config {
+	return &config.Config{}
 }
 
-func New(ctx context.Context, config *Config, name string) (*Provider, error) {
+func New(ctx context.Context, config *config.Config, name string) (*Provider, error) {
 	log.Info("New Traefik Aggregator plugin with name %s and config %+v", name, config)
-	pollInterval, err := time.ParseDuration(config.PollInterval)
+
+	app, err := application.NewApp(config)
 
 	if err != nil {
-		return nil, fmt.Errorf("error while parsing poll interval: %w", err)
+		return nil, fmt.Errorf("error while creating app: %w", err)
 	}
 
-	provider := Provider{
-		config:       config,
-		pollInterval: pollInterval,
-	}
-
-	return &provider, nil
+	return &Provider{
+		app: app,
+	}, nil
 }
 
 func (p *Provider) Init() error {
-	log.Info("Initializing Traefik Aggregator plugin with config %+v", p.config)
-
-	p.aggregators = make([]aggregator.Aggregator, len(p.config.Instances))
-
-	for i, instance := range p.config.Instances {
-		log.Info("Instance %d: %+v", i, instance)
-		fetcher := aggregator.NewFetcher(instance)
-		converter := aggregator.NewConverter(instance)
-
-		p.aggregators[i] = aggregator.NewAggregator(fetcher, converter, instance)
-	}
-
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Error("Recovered from panic: %v", r)
-			}
-		}()
-
-		for true {
-			time.Sleep(2 * time.Second)
-			for _, aggregator := range p.aggregators {
-				aggregator.Run()
-			}
-		}
-	}()
+	log.Info("Initializing Traefik Aggregator plugin")
 
 	return nil
 }
 
 func (p *Provider) Provide(cfgChan chan<- json.Marshaler) error {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	p.cancel = cancel
+	ctx, _ := context.WithCancel(context.Background())
 
 	go func() {
 		defer func() {
@@ -88,40 +54,10 @@ func (p *Provider) Provide(cfgChan chan<- json.Marshaler) error {
 			}
 		}()
 
-		p.run(ctx, cfgChan)
+		p.app.Run(ctx, cfgChan)
 	}()
+
 	return nil
-}
-
-func (p *Provider) run(ctx context.Context, cfgChan chan<- json.Marshaler) {
-	ticker := time.NewTicker(p.pollInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-
-			configs := []*dynamic.Configuration{}
-
-			for _, aggregator := range p.aggregators {
-				config, err := aggregator.Run()
-
-				if err != nil {
-					log.Error("Error while running aggregator: %v", err)
-					continue
-				}
-
-				configs = append(configs, config)
-			}
-
-			configuration := aggregator.JoinConfigs(configs)
-
-			cfgChan <- &dynamic.JSONPayload{Configuration: configuration}
-
-		case <-ctx.Done():
-			return
-		}
-	}
 }
 
 func (p *Provider) Stop() error {

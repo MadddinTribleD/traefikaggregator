@@ -12,9 +12,9 @@ import (
 func main() {
 	ctx := context.Background()
 
-	config := &traefikaggregator.Config{
+	config := &config.Config{
 		PollInterval: "2s",
-		Instances:    []config.Instance{},
+		Instances:    []config.TraefikInstance{},
 	}
 	plugin, _ := traefikaggregator.New(ctx, config, "traefikaggregator")
 
