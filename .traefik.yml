@@ -9,9 +9,34 @@ import: version.gafert.org/MadddinTribleD/traefikaggregator
 summary: 'Traefik Aggregator Plugin'
 
 testData:
-  pollInterval: 5s
+  pollInterval: 2s
   instances:
-    - serviceName: other-traefik-host
-      urls: 
-        - http://other.traefik.host:80
-      apiEndpoint: http://other.traefik.host:8080/api
+    - apiEndpoint: http://<traefikInstance_1>:8080/api
+      service:
+        name: traefikInstance-1-web
+        loadBalancer:
+          servers:
+            - url: http://<traefikInstance_1>:80
+      allowedEndpoints:
+        - web
+      router:
+        entryPoints:
+          - web
+        middlewares:
+          - redirect-to-https@file
+    - apiEndpoint: http://<traefikInstance_1>:8080/api
+      service:
+        name: traefikInstance-1-web-secured
+        loadBalancer:
+          servers:
+            - url: https://<traefikInstance_1>:443
+      allowedEndpoints:
+        - web-secured
+      router:
+        entryPoints:
+          - web-secured
+        tls:
+          enabled: true
+      certResolverMapping:
+        <remoteTlsResolve1>: <localTlsResolve1>
+        <remoteTlsResolve2>: <localTlsResolve2>
