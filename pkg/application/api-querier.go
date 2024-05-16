@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/traefik/genconf/dynamic"
 	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/models"
 )
 
@@ -39,10 +40,36 @@ func (a *ApiQuerier) QueryHttpRouter(ctx context.Context) ([]models.Router, erro
 		return nil, fmt.Errorf("error while reading response body: %w", err)
 	}
 
-	routers := []models.Router{}
-	if err := json.Unmarshal(body, &routers); err != nil {
+	routers, err := a.unmarshalBody(body)
+	if err != nil {
 		return nil, fmt.Errorf("error while unmarshalling routers: %w", err)
 	}
 
 	return routers, nil
+}
+
+func (a *ApiQuerier) unmarshalBody(body []byte) ([]models.Router, error) {
+	dynamicRouter := []dynamic.Router{}
+	if err := json.Unmarshal(body, &dynamicRouter); err != nil {
+		return nil, fmt.Errorf("error while unmarshalling routers: %w", err)
+	}
+
+	names := []struct {
+		Name string `json:"name"`
+	}{}
+	if err := json.Unmarshal(body, &names); err != nil {
+		return nil, fmt.Errorf("error while unmarshalling router names: %w", err)
+	}
+
+	routers := []models.Router{}
+
+	for i, router := range dynamicRouter {
+		routers = append(routers, models.Router{
+			Router: router,
+			Name:   names[i].Name,
+		})
+	}
+
+	return routers, nil
+
 }
