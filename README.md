@@ -5,20 +5,20 @@ The use case is for an ingress proxy in e.g. a different machine than the actual
 
 ## Usage
 
-### Setup
+### Setup as Local Plugin
 
 Clone the repository
 
 ```bash
-git clone https://version.gafert.org/MadddinTribleD/traefikaggregator traefikaggregator
+git clone https://github.com/MadddinTribleD/traefikaggregator traefikaggregator
 ```
 
-The plugin needs to be located in the `plugins-local/src/version.gafert.org/MadddinTribleD/traefikaggregator` relative to the traefik binary.  
+The plugin needs to be located in the `plugins-local/src/github.com/MadddinTribleD/traefikaggregator` relative to the traefik binary.  
 For docker-compose the volume mount looks like this:
 
 ```yml
     volumes:
-      - ./traefikaggregator:/plugins-local/src/version.gafert.org/MadddinTribleD/traefikaggregator
+      - ./traefikaggregator:/plugins-local/src/github.com/MadddinTribleD/traefikaggregator
 ```
 
 ### Configuration
