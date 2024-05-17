@@ -1,8 +1,8 @@
 displayName: Traefik Aggregator
 type: provider
 
-iconPath: ./img/icon.svg
-bannerPath: ./img/icon.svg
+iconPath: ./img/icon.png
+bannerPath: ./img/icon.png
 
 import: github.com/MadddinTribleD/traefikaggregator
 
