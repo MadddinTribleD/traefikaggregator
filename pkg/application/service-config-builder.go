@@ -1,8 +1,8 @@
 package application
 
 import (
+	"github.com/MadddinTribleD/traefikaggregator/pkg/config"
 	"github.com/traefik/genconf/dynamic"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/config"
 )
 
 type ServiceConfigBuilder struct {

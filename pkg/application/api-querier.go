@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/MadddinTribleD/traefikaggregator/pkg/models"
 	"github.com/traefik/genconf/dynamic"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/models"
 )
 
 type ApiQuerier struct {

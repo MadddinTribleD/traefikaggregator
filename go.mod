@@ -1,4 +1,4 @@
-module version.gafert.org/MadddinTribleD/traefikaggregator
+module github.com/MadddinTribleD/traefikaggregator
 
 go 1.21.4
 

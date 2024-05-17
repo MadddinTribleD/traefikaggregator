@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MadddinTribleD/traefikaggregator/pkg/config"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/models"
 	"github.com/traefik/genconf/dynamic"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/config"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/models"
 )
 
 type App interface {

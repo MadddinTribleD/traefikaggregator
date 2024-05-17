@@ -4,7 +4,7 @@ type: provider
 iconPath: ./img/icon.svg
 bannerPath: ./img/icon.svg
 
-import: version.gafert.org/MadddinTribleD/traefikaggregator
+import: github.com/MadddinTribleD/traefikaggregator
 
 summary: 'Traefik Aggregator Plugin'
 

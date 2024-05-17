@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"version.gafert.org/MadddinTribleD/traefikaggregator"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/config"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/log"
+	"github.com/MadddinTribleD/traefikaggregator"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/config"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/log"
 )
 
 func main() {

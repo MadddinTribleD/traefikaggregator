@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/application"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/config"
-	"version.gafert.org/MadddinTribleD/traefikaggregator/pkg/log"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/application"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/config"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/log"
 )
 
 // We need this defined here, because the plugin loader does not support importing from other packages
