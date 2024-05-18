@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/MadddinTribleD/traefikaggregator/pkg/config"
@@ -26,6 +27,7 @@ type app struct {
 	apiQueriers         map[string]*ApiQuerier
 	routerConfigBuilder map[string]*routerConfigBuilderWithApi
 	serviceConfig       map[string]*dynamic.Service
+	lastConfiguration   *dynamic.Configuration
 }
 
 func NewApp(config *config.Config) (App, error) {
@@ -77,10 +79,14 @@ func (a *app) Run(ctx context.Context, configChannel chan<- json.Marshaler) erro
 		case <-ctx.Done():
 			return nil
 		case <-ticker.C:
-			config, err := a.run(ctx)
+			config, changed, err := a.run(ctx)
 
 			if err != nil {
 				return err
+			}
+
+			if !changed {
+				continue
 			}
 
 			configByte, _ := config.MarshalJSON()
@@ -96,14 +102,14 @@ func (a *app) Run(ctx context.Context, configChannel chan<- json.Marshaler) erro
 	}
 }
 
-func (a *app) run(ctx context.Context) (json.Marshaler, error) {
+func (a *app) run(ctx context.Context) (json.Marshaler, bool, error) {
 	apiRouters := map[string][]models.Router{}
 
 	for apiEndpoint, apiQuerier := range a.apiQueriers {
 		routers, err := apiQuerier.QueryHttpRouter(ctx)
 
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		apiRouters[apiEndpoint] = routers
@@ -120,12 +126,22 @@ func (a *app) run(ctx context.Context) (json.Marshaler, error) {
 		}
 	}
 
-	return &dynamic.JSONPayload{
-		Configuration: &dynamic.Configuration{
-			HTTP: &dynamic.HTTPConfiguration{
-				Routers:  allRouterConfig,
-				Services: a.serviceConfig,
-			},
+	configuration := &dynamic.Configuration{
+		HTTP: &dynamic.HTTPConfiguration{
+			Routers:  allRouterConfig,
+			Services: a.serviceConfig,
 		},
-	}, nil
+	}
+
+	if reflect.DeepEqual(configuration, a.lastConfiguration) {
+		return &dynamic.JSONPayload{
+			Configuration: a.lastConfiguration,
+		}, false, nil
+	}
+
+	a.lastConfiguration = configuration
+
+	return &dynamic.JSONPayload{
+		Configuration: configuration,
+	}, true, nil
 }
