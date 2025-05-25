@@ -16,7 +16,12 @@ const (
 func Log(level LogLevel, format string, args ...interface{}) {
 	message := fmt.Sprintf(format, args...)
 
-	os.Stdout.WriteString(fmt.Sprintf("%s: %s\n", level, message))
+	file := os.Stdout
+	if level == ErrorLevel {
+		file = os.Stderr
+	}
+
+	file.WriteString(fmt.Sprintf("%s: %s\n", level, message))
 }
 
 func Info(format string, args ...interface{}) {

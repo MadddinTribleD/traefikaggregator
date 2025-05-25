@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MadddinTribleD/traefikaggregator/pkg/config"
+	"github.com/MadddinTribleD/traefikaggregator/pkg/log"
 	"github.com/MadddinTribleD/traefikaggregator/pkg/models"
 	"github.com/traefik/genconf/dynamic"
 )
@@ -69,6 +70,7 @@ func NewApp(config *config.Config) (App, error) {
 }
 
 func (a *app) Run(ctx context.Context, configChannel chan<- json.Marshaler) error {
+	log.Info("Starting Traefik Aggregator application with poll interval %s", a.pollInterval)
 	ticker := time.NewTicker(a.pollInterval)
 	defer ticker.Stop()
 
@@ -82,7 +84,8 @@ func (a *app) Run(ctx context.Context, configChannel chan<- json.Marshaler) erro
 			config, changed, err := a.run(ctx)
 
 			if err != nil {
-				return err
+				log.Error("Error while running application: %v", err)
+				continue
 			}
 
 			if !changed {
@@ -97,6 +100,7 @@ func (a *app) Run(ctx context.Context, configChannel chan<- json.Marshaler) erro
 
 			oldConfigByte = configByte
 
+			log.Info("Configuration has changed, sending new configuration")
 			configChannel <- config
 		}
 	}
